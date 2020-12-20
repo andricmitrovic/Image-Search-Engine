@@ -1,3 +1,6 @@
 Imagenet64_train_part1/
 tiny-imagenet-200/
 .idea/
+*.jpeg
+data/
+__pycache__/

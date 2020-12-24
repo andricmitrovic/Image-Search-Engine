@@ -17,35 +17,46 @@ p = 0.5 to avoid over-fitting
 """
 
 def trainLoop(cnn : CNN, ut : Utils):
-    criterion = None
-    optimizer = optim.SGD(cnn.parameters(), lr=0.5)
+    criterion = ut.tripletLoss
+    optimizer = optim.SGD(cnn.parameters(), lr=0.05)
+
+    i = 0
+    counter = []
+    loss_history = []
 
     for epoch in range(0, ut.EPOCHS):
-        batch = ut.getBatch()
-        for data in batch:
-            img1, label1 = data[0]
-            img2, label2 = data[1]
-            img3, label3 = data[2]
+        for batchRuns in range(0, 100):
+            batch = ut.getBatch()
+            for data in batch:
 
-            img1 = torch.reshape(img1, shape=(1, 3, 32, 32))  # (128)
-            img2 = torch.reshape(img2, shape=(1, 3, 32, 32))
-            img3 = torch.reshape(img3, shape=(1, 3, 32, 32))
+                i += 1
 
-            img1, img2, img3 = img1.to(ut.device), img2.to(ut.device), img3.to(ut.device)
+                img1, label1 = data[0]
+                img2, label2 = data[1]
+                img3, label3 = data[2]
 
+                img1 = torch.reshape(img1, shape=(1, 3, 32, 32))  # (128)
+                img2 = torch.reshape(img2, shape=(1, 3, 32, 32))
+                img3 = torch.reshape(img3, shape=(1, 3, 32, 32))
 
-            optimizer.zero_grad()
-            img1_output = torch.reshape(cnn(img1), (128,))
-            img2_output = torch.reshape(cnn(img2), (128,))
-            img3_output = torch.reshape(cnn(img3), (128,))
+                img1, img2, img3 = img1.to(ut.device), img2.to(ut.device), img3.to(ut.device)
 
-            print(img1_output)
-            return
+                optimizer.zero_grad()
+                output1 = torch.reshape(cnn(img1), (128,))
+                output2 = torch.reshape(cnn(img2), (128,))
+                output3 = torch.reshape(cnn(img3), (128,))
 
-            #loss_contrastive = criterion(output1, output2, label)
-            #loss_contrastive.backward()
-            optimizer.step()
-        print("Epoch number {}\n".format(epoch))
+                loss = criterion(output1, output2, output3)
+                loss.backward()
+                optimizer.step()
+
+                if i % 10 == 0:
+                    print("Epoch number {}\n Current loss {}\n".format(epoch, loss.item()))
+                    counter.append(i)
+                    loss_history.append(loss.item())
+
+    plt.plot(counter, loss_history)
+    plt.show()
 
 # for epoch in range(0,Config.train_number_epochs):
 #     for i, data in enumerate(train_dataloader,0):

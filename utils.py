@@ -34,9 +34,14 @@ class Utils:
             print('Allocated:', round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1), 'GB')
             print('Cached:   ', round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1), 'GB')
 
-        self.dataset = TripletDataset()
+        self.trainset = TripletDataset("train")
+        self.trainloader = DataLoader(self.trainset,
+                                shuffle=True,
+                                num_workers=0,
+                                batch_size=self.batchSize)
 
-        self.dataloader = DataLoader(self.dataset,
+        self.testset = TripletDataset("test")
+        self.testloader = DataLoader(self.testset,
                                 shuffle=True,
                                 num_workers=0,
                                 batch_size=self.batchSize)
@@ -52,32 +57,37 @@ class Utils:
         displayList = []
 
         for i in range(self.batchSize):
-            displayList += [batch[0][0][i], batch[1][0][i], batch[2][0][i]]
+            displayList += [batch[0][i], batch[1][i], batch[2][i]]
 
         self.imshow(torchvision.utils.make_grid(displayList, nrow=3))
 
     def tripletLoss(self, output1, output2, output3):
+        #print(output1.shape)
+
+        norm12 = [torch.dist(out1, out2) for out1, out2 in zip(output1, output2)]
+        norm13 = [torch.dist(out1, out3) for out1, out3 in zip(output1, output3)]
+
+        #print("Norm12", norm12)
+        #print("Norm13", norm13)
+
+        stacked = [torch.stack([norm12[i], norm13[i]], dim=0) for i in range(len(norm12))]
+        #print("Norms stacked", stacked)
 
         f = nn.Softmax(dim=0)
-
-        norm12 = (output1 - output2).norm()
-        norm13 = (output1 - output3).norm()
-
-        #print("Norm12", norm12, norm12.requires_grad)
-        #print("Norm13", norm13, norm13.requires_grad)
-
-        stacked = torch.stack([norm12, norm13], dim=0)
-        #print("Norms stacked", stacked, stacked.requires_grad)
-
-        softmax = f(stacked)
-        #print("Softmax", softmax, softmax.requires_grad)
+        softmax = [f(x) for x in stacked]
+        #print("Softmax", softmax)
 
         mse = nn.MSELoss()
-        output = mse(softmax[0], softmax[1] - 1)
+        mse_loss = [mse(softmax[i][0], softmax[i][1] - 1) for i in range(len(softmax))]
+        #print("Mse", mse_loss)
 
-        #print("Mse", output, output.requires_grad)
+        mse_stacked = torch.stack(mse_loss)
+        #print("Mse stacked", mse_stacked)
 
-        return output
+        total_loss = torch.mean(mse_stacked)
+        #print("Total loss", total_loss)
+
+        return total_loss
 
 
 

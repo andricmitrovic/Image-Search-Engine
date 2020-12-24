@@ -10,17 +10,21 @@ class CNN(nn.Module):
             nn.Conv2d(3, 64, 5),
             nn.MaxPool2d(2),
             nn.ReLU(),                          # inplace=True ???
+            nn.Dropout(p=0.5),                  # disable while testing
 
             nn.Conv2d(64, 128, 3),
             nn.MaxPool2d(2),
             nn.ReLU(),
+            nn.Dropout(p=0.5),
 
             nn.Conv2d(128, 256, 3),
             nn.MaxPool2d(2),
             nn.ReLU(),
+            nn.Dropout(p=0.5),
 
             nn.Conv2d(256, 128, 2),
             nn.ReLU(),
+            #nn.Dropout(p=0.5),     ???
         )
 
     def forward(self, input):

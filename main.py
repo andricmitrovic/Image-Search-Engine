@@ -16,16 +16,16 @@ We used a momentum value of 0.9. We also used the dropout regularization techniq
 p = 0.5 to avoid over-fitting
 """
 
-def trainLoop(cnn : CNN, ut : Utils):
+def _trainLoop(cnn : CNN, ut : Utils):
     criterion = ut.tripletLoss
-    optimizer = optim.SGD(cnn.parameters(), lr=0.05)
+    optimizer = optim.SGD(cnn.parameters(), lr=0.005)
 
     i = 0
     counter = []
     loss_history = []
 
-    for epoch in range(0, ut.EPOCHS):
-        for batchRuns in range(0, 100):
+    for epoch in range(0, 1):#ut.EPOCHS):
+        for batchRuns in range(0, 1000):
             batch = ut.getBatch()
             for data in batch:
 
@@ -58,6 +58,47 @@ def trainLoop(cnn : CNN, ut : Utils):
     plt.plot(counter, loss_history)
     plt.show()
 
+
+def trainLoop(cnn : CNN, ut : Utils):
+    criterion = ut.tripletLoss
+    optimizer = optim.SGD(cnn.parameters(), lr=0.005)
+
+    i = 0
+    counter = []
+    loss_history = []
+
+    for epoch in range(0, 1):#ut.EPOCHS):
+        for batchRuns in range(0, 1000):
+            batch = ut.getBatch()
+            i += 1
+
+            img1, label1 = batch[0]
+            img2, label2 = batch[1]
+            img3, label3 = batch[2]
+
+            img1 = torch.reshape(img1, shape=(1, 3, 32, 32))  # (128)
+            img2 = torch.reshape(img2, shape=(1, 3, 32, 32))
+            img3 = torch.reshape(img3, shape=(1, 3, 32, 32))
+
+            img1, img2, img3 = img1.to(ut.device), img2.to(ut.device), img3.to(ut.device)
+
+            optimizer.zero_grad()
+            output1 = torch.reshape(cnn(img1), (128,))
+            output2 = torch.reshape(cnn(img2), (128,))
+            output3 = torch.reshape(cnn(img3), (128,))
+
+            loss = criterion(output1, output2, output3)
+            loss.backward()
+            optimizer.step()
+
+            if i % 10 == 0:
+                print("Epoch number {}\n Current loss {}\n".format(epoch, loss.item()))
+                counter.append(i)
+                loss_history.append(loss.item())
+
+    plt.plot(counter, loss_history)
+    plt.show()
+
 # for epoch in range(0,Config.train_number_epochs):
 #     for i, data in enumerate(train_dataloader,0):
 #         img0, img1 , label = data
@@ -80,19 +121,12 @@ if __name__ == '__main__':
     ut = Utils(batchSize=4)
     cnn = CNN()
     cnn = cnn.to(ut.device)
-    #ut.displayBatch()
-    #
-    # inputBatch = ut.getBatch()
-    #
-    # img = inputBatch[0][0][0]
-    #
-    # img = torch.reshape(img, shape=(1, 3, 32, 32))
-    #
-    # cnn = CNN()
-    # output = cnn(img)
-    #
-    # print(output.shape)
 
-    trainLoop(cnn, ut)
+    #trainLoop(cnn, ut)
+
+    dataiter = iter(ut.dataloader)
+    example_batch = next(dataiter)
+
+    ut.displayBatch(example_batch)
 
 

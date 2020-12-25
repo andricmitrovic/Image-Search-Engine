@@ -1,14 +1,12 @@
 import torch
 import torch.utils.data
-from PIL import Image
 import numpy as np
-import torchvision.transforms as T
 import torchvision
 import matplotlib.pyplot as plt
-from random import randrange
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from triplet_dataset import TripletDataset
+from datetime import datetime
 
 
 
@@ -47,16 +45,19 @@ class Utils:
                                 batch_size=self.batchSize)
 
     def imshow(self, img):
-        img = img / 2 + 0.5  # unnormalize
+        #img = img / 2 + 0.5  # TODO denormalize
         npimg = img.numpy()
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
         plt.show()
 
-    def displayBatch(self, batch):
+    def displayData(self, num=5):
+
+        dataiter = iter(self.trainloader)
+        batch = next(dataiter)
 
         displayList = []
 
-        for i in range(self.batchSize):
+        for i in range(num):
             displayList += [batch[0][i], batch[1][i], batch[2][i]]
 
         self.imshow(torchvision.utils.make_grid(displayList, nrow=3))
@@ -89,8 +90,23 @@ class Utils:
 
         return total_loss
 
+    def plotLoss(self, counter_train, loss_history_train, counter_test, loss_history_test, shouldSave=False):
 
+        fig, ax = plt.subplots(2)
+        fig.suptitle('Train vs Test')
 
+        ax[0].plot(counter_train, loss_history_train, label="Train")
+        ax[0].grid(True)
+
+        ax[1].plot(counter_test, loss_history_test, label="Test")
+        ax[1].grid(True)
+
+        if shouldSave:
+            today = datetime.now()
+            path = "./Figures/" + today.strftime('%H_%M_%S_%d_%m_%Y')
+            plt.savefig(path)
+
+        plt.show()
 
     """
     dogs : 4 8 6 9 2

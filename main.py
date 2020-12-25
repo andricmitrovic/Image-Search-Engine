@@ -1,23 +1,16 @@
 import torch
 import torch.utils.data
-import matplotlib.pyplot as plt
 from model import CNN
 from utils import Utils
 from torch import optim
 from tqdm import tqdm
+from datetime import datetime
 
 
-"""
-We used a momentum value of 0.9. We also used the dropout regularization technique with
-p = 0.5 to avoid over-fitting
-"""
-
-
-def trainLoop(cnn : CNN, ut : Utils):
+def trainLoop(cnn : CNN, ut : Utils, shouldSave = False):
     criterion = ut.tripletLoss
     #optimizer = optim.SGD(cnn.parameters(), lr=0.5, weight_decay=0.9)
     optimizer = optim.SGD(cnn.parameters(), lr=0.005)
-    #optimizer = optim.Adam(cnn.parameters(), lr=0.005)
 
     i = 0
     counter = []
@@ -25,7 +18,6 @@ def trainLoop(cnn : CNN, ut : Utils):
 
     for epoch in range(0, 1):#ut.EPOCHS):
         for data in tqdm(ut.trainloader):
-            #print(i, len(data), data[0].shape)
 
             i += 1
 
@@ -45,7 +37,6 @@ def trainLoop(cnn : CNN, ut : Utils):
             loss.backward()
             optimizer.step()
 
-
             if i % 10 == 0:
                 #print("Epoch number {}\n Current loss {}\n".format(epoch, loss.item()))
                 counter.append(i)
@@ -53,11 +44,19 @@ def trainLoop(cnn : CNN, ut : Utils):
 
     #plt.plot(counter, loss_history)
     #plt.show()
-    return (counter, loss_history)
+
+    if shouldSave:
+        today = datetime.now()
+        path = "./Models/" + today.strftime('%H_%M_%S_%d_%m_%Y')
+        torch.save(cnn, path)
+
+    return counter, loss_history
 
 
 def testLoop(cnn : CNN, ut : Utils):
+
     with torch.no_grad():
+
         criterion = ut.tripletLoss
 
         i = 0
@@ -65,7 +64,6 @@ def testLoop(cnn : CNN, ut : Utils):
         loss_history = []
 
         for data in tqdm(ut.testloader):
-            #print(i, len(data), data[0].shape)
 
             i += 1
 
@@ -85,7 +83,7 @@ def testLoop(cnn : CNN, ut : Utils):
                 counter.append(i)
                 loss_history.append(loss.item())
 
-        return (counter, loss_history)
+        return counter, loss_history
 
 
 if __name__ == '__main__':
@@ -94,20 +92,10 @@ if __name__ == '__main__':
     cnn = CNN()
     cnn = cnn.to(ut.device)
 
-    counter_train, loss_history_train = trainLoop(cnn, ut)
+    # ut.displayData()
+
+    counter_train, loss_history_train = trainLoop(cnn, ut, shouldSave=True)
     counter_test, loss_history_test = testLoop(cnn, ut)
 
-    plt.plot(counter_train, loss_history_train, label="Train")
-    plt.plot(counter_test, loss_history_test, label="Test")
-    plt.grid(True)
-    plt.title("Train vs Test")
-    plt.show()
-
-    """
-    dataiter = iter(ut.dataloader)
-    example_batch = next(dataiter)
-
-    ut.displayBatch(example_batch)
-    """
-
+    ut.plotLoss(counter_train, loss_history_train, counter_test, loss_history_test, shouldSave=True)
 

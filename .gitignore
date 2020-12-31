@@ -4,3 +4,6 @@ tiny-imagenet-200/
 *.jpeg
 data/
 __pycache__/
+Models/
+Figures/
+*.png

@@ -23,7 +23,7 @@ class CNN(nn.Module):
             nn.Dropout(p=0.5),
 
             nn.Conv2d(256, 128, 2),
-            nn.ReLU(),
+            nn.Sigmoid(),                          # mozdad aktivaciona na [0,1] intervalu
             #nn.Dropout(p=0.5),     ???
         )
 

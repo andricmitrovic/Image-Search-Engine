@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 class Utils:
 
-    def __init__(self, batchSize=4, EPOCHS=30, learning_rate=0.005, weightDecay=None, momentum=None, optim="SGD", lastLayerActivation="Sigmoid"):
+    def __init__(self, batchSize=256, EPOCHS=500, learning_rate=0.0005, weightDecay=None, momentum=None, optim="Adam", lastLayerActivation="Sigmoid"):
 
         self.EPOCHS = EPOCHS
 

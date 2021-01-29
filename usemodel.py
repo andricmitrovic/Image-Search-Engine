@@ -68,7 +68,7 @@ if __name__ == '__main__':
     cnn = cnn.to(ut.device)
     cnn.eval()
 
-    torch.manual_seed(9)
+    #torch.manual_seed(9)
 
     transform_test = T.Compose([T.ToTensor(),
                                      T.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)), ])

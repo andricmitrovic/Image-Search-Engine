@@ -23,8 +23,8 @@ To change training parameters, change argumuments in constructor of class Utils 
     </tr>
     <tr>
         <td>learning_rate</td>
-        <td>learning rate for training</td>
         <td>0.0005</td>
+        <td>learning rate for training</td>
     </tr>
     <tr>
         <td>optim</td>
